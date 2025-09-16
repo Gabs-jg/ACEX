@@ -15,7 +15,7 @@ Clone o repositório:
 Bash
 
 git clone https://github.com/Gabs-jg/ACEX.git
-cd projetoAcex-criando-jogo-com-python
+cd ACEX
 Instale a biblioteca Pygame:
 
 Bash
