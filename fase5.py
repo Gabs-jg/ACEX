@@ -3,12 +3,22 @@ from pygame.locals import *
 
 pygame.init()
 
-#tela
-
-screen_width = 1000
-screen_height = 800
+# Resolução da tela ajustada para 640x360
+screen_width = 640
+screen_height = 360
 screen = pygame.display.set_mode((screen_width,screen_height))
-pygame.display.set_caption('Fase 4')
+pygame.display.set_caption('Fase 5')
+
+try:
+    background_img_original = pygame.image.load('ACEX/assets/background.jpg').convert()
+    # Redimensionar para o novo tamanho da tela (640x360)
+    background_img = pygame.transform.scale(background_img_original, (screen_width, screen_height))
+except pygame.error as e:
+    print(f"Não foi possível carregar a imagem de background. Verifique se o arquivo background.jpg está na pasta 'assets'. Erro: {e}")
+    # Cria uma superfície preta caso a imagem não carregue
+    background_img = pygame.Surface((screen_width, screen_height))
+    background_img.fill((0, 0, 0))
+
 
 #cores
 white = (255,255,255)
@@ -21,50 +31,51 @@ yellow = (255, 255, 0) # Cor para as novas plataformas
 
 #chão
 
-ground_height = 50
+ground_height = 30 # Reduzida a altura do chão
 ground = pygame.Rect(0,screen_height - ground_height, screen_width, ground_height)
 
-# PLATAFORMAS (Novo)
+
 plataformas = [
-    pygame.Rect(150, screen_height - ground_height - 100, 200, 20),
-    pygame.Rect(400, screen_height - ground_height - 200, 150, 20),
-    pygame.Rect(650, screen_height - ground_height - 300, 200, 20)
+    pygame.Rect(80, screen_height - ground_height - 60, 100, 15), # P1: y = 360-30-60 = 270
+    pygame.Rect(260, screen_height - ground_height - 120, 120, 15), # P2: y = 360-30-120 = 210
+    pygame.Rect(450, screen_height - ground_height - 80, 100, 15) # P3: y = 360-30-80 = 250
 ]
 
 #final
 
-final_syze = 100
-final = pygame.Rect(screen_width - final_syze, screen_height - ground_height - final_syze, final_syze, final_syze)
+final_syze = 30 # Tamanho ajustado
+final = pygame.Rect(screen_width - final_syze, ground.top - final_syze, final_syze, final_syze) # 🆕 POSIÇÃO 
 passou = False
 
 
 #enemy
-enemy_syze = 40
-enemy = pygame.Rect(screen_width - final_syze - enemy_syze, screen_height - ground_height - enemy_syze, enemy_syze, enemy_syze)
+enemy_syze = 30 # Tamanho ajustado
+enemy = pygame.Rect(screen_width - final_syze - enemy_syze - 50, ground.top - enemy_syze, enemy_syze, enemy_syze)
 morreu = False
-enemy_speed = 8
-borda_esquerda = 0
-borda_direita = screen_width - final_syze - enemy_syze
+enemy_speed = 3 # Velocidade ajustada
+borda_esquerda = 300 # Define uma área de patrulha
+borda_direita = screen_width - final_syze - enemy_syze - 10 
 
 #personagem
 
-player_size = 50
+player_size = 25 # Tamanho ajustado
 player = pygame.Rect(0, 0, player_size,player_size)
-player.bottomleft = ground.topleft
+player.bottomleft = ground.topleft 
+player.x += 10 # Pequeno deslocamento para não ficar preso na borda
 
 #gravidade e pulo
 
 y_velocity = 0
 gravity = 0.5
 is_on_ground = False
-jump = -10
+jump = -8 # Força do pulo ajustada
 # VARIÁVEIS PARA DOUBLE JUMP
-max_jumps = 2  # Total de saltos (1 normal + 1 duplo = 2)
+max_jumps = 2  
 jumps_left = max_jumps
 
 
 # Variáveis para a nova mecânica de DASH
-dash_speed = 100 
+dash_speed = 40 # Velocidade do dash ajustada
 is_dashing = False
 dash_direction = 1 
 can_dash = True 
@@ -73,8 +84,8 @@ can_dash = True
 player_direction = 1 
 
 # --- parâmetros de escalada ---
-climb_speed = 4    # quanto sobe por frame ao escalar
-side_touch_buffer = 5  # margem para detectar toque lateral sem conflitar com topo
+climb_speed = 4    
+side_touch_buffer = 5  
 
 #função para o inimigo de mover
 
@@ -82,7 +93,7 @@ def mover():
     global enemy,enemy_speed, borda_direita,borda_esquerda
     enemy.x += enemy_speed
 
-    if enemy.left < borda_esquerda or enemy.left > borda_direita:
+    if enemy.left < borda_esquerda or enemy.right > borda_direita: # 🆕 CORRIGIDO: Usando enemy.right para a borda direita
         enemy_speed *= -1
     
 
@@ -103,7 +114,7 @@ def touching_platform_side():
     return None
 
 
-# Função para colisões horizontais (evita "grudar" e atravessar)
+# Função para colisões horizontais
 def check_horizontal_collision(dx):
     global player
     if dx == 0:
@@ -125,7 +136,7 @@ def check_horizontal_collision(dx):
 
 # Função para verificar colisão com plataformas (FIXADO CONTRA TUNNELING)
 def check_platform_collision():
-    global player, y_velocity, is_on_ground, jumps_left
+    global player, y_velocity, is_on_ground, jumps_left, can_dash 
     
     on_platform = False
     
@@ -142,19 +153,20 @@ def check_platform_collision():
                 is_on_ground = True
                 on_platform = True
                 jumps_left = max_jumps
+                can_dash = True 
             # Bateu a cabeça embaixo da plataforma ao subir
             elif prev_bottom >= platform.bottom and player.top <= platform.bottom and y_velocity < 0:
                 player.top = platform.bottom
                 y_velocity = 0
             else:
                 # Caso de colisão ambígua (p.ex. teletransporte), empurre para fora verticalmente
-                # Se o centro do player está acima do centro da plataforma, coloque em cima; senão coloque em baixo.
                 if player.centery < platform.centery:
                     player.bottom = platform.top
                     y_velocity = 0
                     is_on_ground = True
                     on_platform = True
                     jumps_left = max_jumps
+                    can_dash = True 
                 else:
                     player.top = platform.bottom
                     y_velocity = 0
@@ -166,6 +178,7 @@ def check_platform_collision():
         is_on_ground = True
         on_platform = True
         jumps_left = max_jumps
+        can_dash = True 
 
     if not on_platform:
         is_on_ground = False
@@ -175,14 +188,15 @@ def check_platform_collision():
 
 def reiniciar_jogo():
     global player, y_velocity, is_on_ground, passou, morreu, enemy, enemy_speed, player_direction, is_dashing, can_dash, jumps_left
-    player.x = 0
-    player.y = 0
+    # Reposiciona o player no canto inferior esquerdo
     player.bottomleft = ground.topleft
+    player.x += 10 # Pequeno deslocamento
 
-    enemy.right = screen_width - final_syze
+    # Reposiciona o inimigo
+    enemy.right = screen_width - final_syze - 50
     enemy.bottom = ground.top
 
-    enemy_speed = 8
+    enemy_speed = 3
     y_velocity = 0
     is_on_ground = False
 
@@ -192,7 +206,7 @@ def reiniciar_jogo():
     is_dashing = False 
     can_dash = True
     player_direction = 1
-    jumps_left = max_jumps # Resetar o double jump
+    jumps_left = max_jumps 
     
 
 #loop jogo
@@ -211,13 +225,13 @@ while running:
                 if (event.key == K_SPACE or event.key == K_w) and jumps_left > 0:
                     y_velocity = jump
                     jumps_left -= 1
-                    is_on_ground = False # O salto sempre tira o personagem do chão
+                    is_on_ground = False 
 
                 
                 # DASH (Avanço) com a tecla 'E'
                 if event.key == K_e and can_dash and not is_dashing:
                     is_dashing = True
-                    # can_dash = False 
+                    can_dash = False 
         else:
             if event.type == pygame.KEYDOWN:
                 if event.key == K_r:
@@ -231,26 +245,24 @@ while running:
         
         dx = 0
         if keys[K_a]:
-            dx = -5
+            dx = -4 # Velocidade horizontal ajustada
             player_direction = -1 
         if keys[K_d]:
-            dx = 5
+            dx = 4 # Velocidade horizontal ajustada
             player_direction = 1 
             
         # Lógica do DASH (Avanço)
         if is_dashing:
             dx = dash_speed * player_direction
             is_dashing = False 
-            # após dash, asseguramos limites na aplicação de check_horizontal_collision
-
+            
         # Aplicar movimentação horizontal com checagem de colisão
         check_horizontal_collision(dx)
 
         # gravidade do personagem (aplicada a y_velocity)
         y_velocity += gravity
 
-        # Aplicamos movimento vertical *antes* de checar colisões para calcular prev_bottom corretamente.
-        # Contudo, em nossa checagem usamos prev_bottom = player.bottom - y_velocity para anti-tunneling.
+        # Aplicamos movimento vertical
         player.y += y_velocity
 
         # Verifica e corrige colisões verticais (pouso, cabeça)
@@ -262,8 +274,6 @@ while running:
         if lado is not None and keys[K_w]:
             player.y -= climb_speed
             y_velocity = 0
-            # opcionalmente manter jumps_left para permitir pulo após escalada
-            # jumps_left = max_jumps
 
         #mover o inimigo
         mover()
@@ -278,7 +288,8 @@ while running:
             passou = True
 
         #desenhando as parada da tela
-        screen.fill(blue)
+        # DESENHO: Background
+        screen.blit(background_img, (0, 0))
         
         # Desenhar plataformas 
         for platform in plataformas:
