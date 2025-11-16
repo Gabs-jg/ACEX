@@ -10,7 +10,7 @@ screen = pygame.display.set_mode((screen_width,screen_height))
 pygame.display.set_caption('Fase 5')
 
 try:
-    background_img_original = pygame.image.load('ACEX/assets/background.jpg').convert()
+    background_img_original = pygame.image.load('assets/background.jpg').convert()
     # Redimensionar para o novo tamanho da tela (640x360)
     background_img = pygame.transform.scale(background_img_original, (screen_width, screen_height))
 except pygame.error as e:
@@ -19,6 +19,15 @@ except pygame.error as e:
     background_img = pygame.Surface((screen_width, screen_height))
     background_img.fill((0, 0, 0))
 
+# Criar um background mais largo para repetição
+background_width = int(screen_width * 1.4)
+try:
+    # Redimensionar a imagem original para a largura maior
+    background_extended = pygame.transform.scale(background_img_original, (background_width, screen_height))
+except:
+    # Fallback se não conseguir carregar a imagem
+    background_extended = pygame.Surface((background_width, screen_height))
+    background_extended.fill((0, 0, 0))
 
 #cores
 white = (255,255,255)
@@ -30,41 +39,38 @@ magenta = (255,0,255)
 yellow = (255, 255, 0) # Cor para as novas plataformas
 
 #chão
-
 ground_height = 30 # Reduzida a altura do chão
-ground = pygame.Rect(0,screen_height - ground_height, screen_width, ground_height)
+ground = pygame.Rect(0, screen_height - ground_height, background_width, ground_height)
 
-
+# MESMO NÚMERO DE PLATAFORMAS DO EXEMPLO (3 plataformas)
 plataformas = [
-    pygame.Rect(80, screen_height - ground_height - 60, 100, 15), # P1: y = 360-30-60 = 270
-    pygame.Rect(260, screen_height - ground_height - 120, 120, 15), # P2: y = 360-30-120 = 210
-    pygame.Rect(450, screen_height - ground_height - 80, 100, 15) # P3: y = 360-30-80 = 250
+    pygame.Rect(80, screen_height - ground_height - 60, 100, 15),  # P1: y = 360-30-60 = 270
+    pygame.Rect(260, screen_height - ground_height - 120, 120, 15), # P2: y = 360-30-120 = 210  
+    pygame.Rect(450, screen_height - ground_height - 80, 100, 15)  # P3: y = 360-30-80 = 250
 ]
 
-#final
-
+#final - PORTA PARA FINALIZAR O NÍVEL
 final_syze = 30 # Tamanho ajustado
-final = pygame.Rect(screen_width - final_syze, ground.top - final_syze, final_syze, final_syze) # 🆕 POSIÇÃO 
+# Posiciona a porta logo após a última plataforma (450 + 100 = 550, então 560 fica logo depois)
+final = pygame.Rect(560, ground.top - final_syze, final_syze, final_syze)
+
 passou = False
 
-
-#enemy
-enemy_syze = 30 # Tamanho ajustado
-enemy = pygame.Rect(screen_width - final_syze - enemy_syze - 50, ground.top - enemy_syze, enemy_syze, enemy_syze)
+#enemy - AGORA PATRULHA APENAS ENTRE O COMEÇO E A PORTA
+enemy_syze = 25 # Tamanho um pouco menor
+enemy = pygame.Rect(300, ground.top - enemy_syze, enemy_syze, enemy_syze)  # Começa no meio do percurso
 morreu = False
 enemy_speed = 3 # Velocidade ajustada
-borda_esquerda = 300 # Define uma área de patrulha
-borda_direita = screen_width - final_syze - enemy_syze - 10 
+# O inimigo agora patrulha apenas entre o começo da fase e a porta
+borda_esquerda = 100  # Um pouco depois do começo
+borda_direita = final.left - 20  # Um pouco antes da porta
 
 #personagem
-
 player_size = 25 # Tamanho ajustado
 player = pygame.Rect(0, 0, player_size,player_size)
-player.bottomleft = ground.topleft 
-player.x += 10 # Pequeno deslocamento para não ficar preso na borda
+player.bottomleft = (50, ground.top) # Começa um pouco à direita para a câmera
 
 #gravidade e pulo
-
 y_velocity = 0
 gravity = 0.5
 is_on_ground = False
@@ -72,7 +78,6 @@ jump = -8 # Força do pulo ajustada
 # VARIÁVEIS PARA DOUBLE JUMP
 max_jumps = 2  
 jumps_left = max_jumps
-
 
 # Variáveis para a nova mecânica de DASH
 dash_speed = 40 # Velocidade do dash ajustada
@@ -87,15 +92,31 @@ player_direction = 1
 climb_speed = 4    
 side_touch_buffer = 5  
 
-#função para o inimigo de mover
+# Variáveis da câmera
+camera_x = 0
+player_offset = screen_width // 3  # Jogador fica a 1/3 da tela à esquerda (estilo Mario)
 
+#função para o inimigo de mover - AGORA PATRULHA APENAS ENTRE COMEÇO E PORTA
 def mover():
-    global enemy,enemy_speed, borda_direita,borda_esquerda
+    global enemy, enemy_speed, borda_direita, borda_esquerda
     enemy.x += enemy_speed
 
-    if enemy.left < borda_esquerda or enemy.right > borda_direita: # 🆕 CORRIGIDO: Usando enemy.right para a borda direita
+    # Inverte direção ao atingir as bordas entre começo e porta
+    if enemy.left <= borda_esquerda or enemy.right >= borda_direita:
         enemy_speed *= -1
+
+# Função para atualizar a câmera
+def update_camera():
+    global camera_x
+    # A câmera segue o jogador, mantendo-o a 1/3 da tela à esquerda
+    target_camera_x = player.x - player_offset
     
+    # Limitar a câmera para não mostrar áreas fora do mundo
+    camera_x = max(0, min(target_camera_x, background_width - screen_width))
+
+# Função para aplicar o deslocamento da câmera a um retângulo
+def apply_camera(rect):
+    return rect.move(-camera_x, 0)
 
 # Função para detectar toque lateral em plataformas (para escalada)
 def touching_platform_side():
@@ -113,7 +134,6 @@ def touching_platform_side():
                     return "right"
     return None
 
-
 # Função para colisões horizontais
 def check_horizontal_collision(dx):
     global player
@@ -129,10 +149,9 @@ def check_horizontal_collision(dx):
                     player.right = platform.left
                 elif dx < 0:
                     player.left = platform.right
-    # manter dentro da tela
+    # manter dentro do mundo
     player.left = max(0, player.left)
-    player.right = min(screen_width, player.right)
-
+    player.right = min(background_width, player.right)
 
 # Função para verificar colisão com plataformas (FIXADO CONTRA TUNNELING)
 def check_platform_collision():
@@ -183,17 +202,14 @@ def check_platform_collision():
     if not on_platform:
         is_on_ground = False
 
-
 #função pra reiniciar o jogo
-
 def reiniciar_jogo():
-    global player, y_velocity, is_on_ground, passou, morreu, enemy, enemy_speed, player_direction, is_dashing, can_dash, jumps_left
+    global player, y_velocity, is_on_ground, passou, morreu, enemy, enemy_speed, player_direction, is_dashing, can_dash, jumps_left, camera_x
     # Reposiciona o player no canto inferior esquerdo
-    player.bottomleft = ground.topleft
-    player.x += 10 # Pequeno deslocamento
+    player.bottomleft = (50, ground.top)
 
-    # Reposiciona o inimigo
-    enemy.right = screen_width - final_syze - 50
+    # Reposiciona o inimigo no meio do percurso
+    enemy.x = 300
     enemy.bottom = ground.top
 
     enemy_speed = 3
@@ -207,10 +223,9 @@ def reiniciar_jogo():
     can_dash = True
     player_direction = 1
     jumps_left = max_jumps 
-    
+    camera_x = 0
 
 #loop jogo
-
 running = True
 clock = pygame.time.Clock()
 
@@ -227,7 +242,6 @@ while running:
                     jumps_left -= 1
                     is_on_ground = False 
 
-                
                 # DASH (Avanço) com a tecla 'E'
                 if event.key == K_e and can_dash and not is_dashing:
                     is_dashing = True
@@ -237,9 +251,7 @@ while running:
                 if event.key == K_r:
                     reiniciar_jogo()
 
-    
     if not passou and not morreu:
-    
         #movimento esquerda e direita
         keys = pygame.key.get_pressed()
         
@@ -278,27 +290,31 @@ while running:
         #mover o inimigo
         mover()
 
+        # Atualizar a câmera
+        update_camera()
+
         # Colisão com o inimigo
         if player.colliderect(enemy):
             morreu = True
-
 
         #colisao com o final
         if player.colliderect(final):
             passou = True
 
         #desenhando as parada da tela
-        # DESENHO: Background
-        screen.blit(background_img, (0, 0))
+        # DESENHO: Background com repetição
+        screen.blit(background_extended, (0, 0), (camera_x, 0, screen_width, screen_height))
         
-        # Desenhar plataformas 
+        # Desenhar plataformas (aplicando câmera)
         for platform in plataformas:
-            pygame.draw.rect(screen, yellow, platform)
+            platform_rect = apply_camera(platform)
+            pygame.draw.rect(screen, yellow, platform_rect)
             
-        pygame.draw.rect(screen,red,player)
-        pygame.draw.rect(screen,green,ground)
-        pygame.draw.rect(screen,black,final)
-        pygame.draw.rect(screen,magenta,enemy)
+        # Desenhar outros elementos (aplicando câmera)
+        pygame.draw.rect(screen, red, apply_camera(player))
+        pygame.draw.rect(screen, green, apply_camera(ground))
+        pygame.draw.rect(screen, black, apply_camera(final))
+        pygame.draw.rect(screen, magenta, apply_camera(enemy))
         
     elif morreu:
         fonte = pygame.font.SysFont('arial', 20, True, True)
@@ -316,10 +332,7 @@ while running:
         screen.fill(black)
         screen.blit(text, (screen_width//2 - text.get_width()//2, screen_height //2 - text.get_height() //2))
 
-    
-    
     pygame.display.flip()
     clock.tick(65)
-
 
 pygame.quit()
