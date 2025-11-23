@@ -70,3 +70,4 @@ def fase1(screen):
 
         pygame.display.flip()
         limit_fps()
+    pygame.quit()
