@@ -1,15 +1,16 @@
 import pygame
+from ..entities.objects import *
+from ..entities.player import *
 from pygame.locals import *
-from .engine import *
+from ..engine import *
 
-def fase1():
+def fase1(screen):
 
-    screen = config.create_screen()
     pygame.display.set_caption("Fase 1")
 
     # Objetos da fase
     ground = create_ground()
-    final = create_final()
+    goal = create_goal()
 
     player = create_player()
 
@@ -34,8 +35,7 @@ def fase1():
                 if event.type == pygame.KEYDOWN:
                     if event.key == K_r:
                         # Reinicia fase
-                        player.x = config.SCREEN_WIDTH//2 - 25
-                        player.y = 0
+                        player = create_player()
                         y_velocity = 0
                         is_on_ground = False
                         passou = False
@@ -55,14 +55,14 @@ def fase1():
             y_velocity, is_on_ground = check_ground_collision(player, ground, y_velocity)
 
             # Chegou ao final da fase
-            if player.colliderect(final):
+            if player.colliderect(goal):
                 passou = True
 
             # Desenho
             screen.fill(config.BLUE)
             pygame.draw.rect(screen, config.RED, player)
             pygame.draw.rect(screen, config.GREEN, ground)
-            pygame.draw.rect(screen, config.BLACK, final)
+            pygame.draw.rect(screen, config.BLACK, goal)
 
         else:
             screen.fill(config.BLACK)

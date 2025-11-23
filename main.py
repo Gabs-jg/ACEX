@@ -1,9 +1,11 @@
 import pygame
-from game.fase1 import fase1
+from game.scenes.fase1 import fase1
+from game import config
 
 def main():
     pygame.init()
-    fase1()
+    screen = config.create_screen()
+    fase1(screen)
     pygame.quit()
 
 if __name__ == "__main__":

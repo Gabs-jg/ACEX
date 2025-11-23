@@ -1,22 +1,13 @@
 import pygame
-from . import config
+from game import config
 
 clock = pygame.time.Clock()
 
 #Functions
-def create_ground():
-    ground_height=50
-    return pygame.Rect(0, config.SCREEN_HEIGHT - ground_height, config.SCREEN_WIDTH, ground_height)
-
-def create_final():
-    return pygame.Rect(config.SCREEN_WIDTH - 100, config.SCREEN_HEIGHT - 150, 100, 100)
-
-def create_player():
-    return pygame.Rect(config.SCREEN_WIDTH//2 - 25, 0, 50, 50)
-
 def apply_gravity(player_rect, y_velocity, is_on_ground):
-    y_velocity += config.GRAVITY
-    player_rect.y += y_velocity
+    if not is_on_ground:
+        y_velocity += config.GRAVITY
+        player_rect.y += y_velocity
     return y_velocity
 
 def check_ground_collision(player_rect, ground_rect, y_velocity):
