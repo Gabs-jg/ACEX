@@ -27,7 +27,7 @@ YELLOW = (255, 255, 0)
 # --- Carregamento de Assets ---
 # Mantemos isso aqui para passar a imagem para o loop de desenho
 try:
-    background_img_original = pygame.image.load('assets/background.jpg').convert()
+    background_img_original = pygame.image.load('fase5/assets/background.jpg').convert()
     background_width = int(SCREEN_WIDTH * 1.4)
     background_extended = pygame.transform.scale(background_img_original, (background_width, SCREEN_HEIGHT))
 except pygame.error as e:
