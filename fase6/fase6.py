@@ -20,7 +20,7 @@ clock = pygame.time.Clock()
 
 # --- Assets ---
 try:
-    bg_original = pygame.image.load('ACEX/fase6/assets/background.jpg').convert()
+    bg_original = pygame.image.load('fase6/assets/background.jpg').convert()
     # 1. Redimensiona a imagem para o tamanho exato da TELA (fica com a proporção bonita)
     bg_screen_sized = pygame.transform.scale(bg_original, (SCREEN_WIDTH, SCREEN_HEIGHT))
 except:
@@ -123,7 +123,7 @@ porta_final = Porta(4900, SCREEN_HEIGHT - ground_h - 40, 40)
 # ==========================================
 # SETUP DO JOGADOR E CÂMERA
 # ==========================================
-player = Player(50, SCREEN_HEIGHT - 100, 25, WORLD_WIDTH)
+player = Player(50, SCREEN_HEIGHT - 100, 35, WORLD_WIDTH)
 camera = Camera(WORLD_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH)
 
 # --- Estados ---
