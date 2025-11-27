@@ -3,7 +3,6 @@ from game import config
 
 clock = pygame.time.Clock()
 
-#Functions
 def apply_gravity(player_rect, y_velocity, is_on_ground):
     if not is_on_ground:
         y_velocity += config.GRAVITY

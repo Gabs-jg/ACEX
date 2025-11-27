@@ -1,72 +1,89 @@
 import pygame
 from pygame.locals import *
-from ..engine import *
-from ..entities import *
-from game.entities.plataform import plataform as pl
 
-def level1 (screen):
-    pygame.display.set_caption('Fase 1 - Introdução')
+from game import config
+from game.entities.player import Player
+from game.entities.plataform import Plataform
+from game.entities.goal import Goal
+
+
+def level1(screen):
+    pygame.display.set_caption("Fase 1 - Introdução")
     clock = pygame.time.Clock()
 
-    # 1. Chão
-    ground = pl.create_ground()
+    # ----- BACKGROUND -----
+    background = pygame.image.load("game/assets/images/background.png").convert()
+    background = pygame.transform.scale(background, (config.SCREEN_WIDTH, config.SCREEN_HEIGHT))
 
-    # 2. Saída
-    final_size = 100
-    porta_final = Porta(SCREEN_WIDTH - final_size, SCREEN_HEIGHT - ground_height - final_size, final_size)
+    # ----- OBJETOS DA CENA -----
+    ground = Plataform.create_ground()
+    platforms = [ground]  # lista de plataformas
 
-    # 3. Player
-    player_size = 50
-    # Começa no meio da tela (width//2), lá no topo (y=0)
-    start_x = SCREEN_WIDTH // 2 - player_size // 2
-    player = Player(start_x, 0, player_size, SCREEN_WIDTH)
+    goal = Goal.create_goal()
 
-    # --- Estados ---
+    # ----- PLAYER -----
+    # Eu não sei por que mas 37 (em player_size) é o número que fica aceitável pro personagem encostar no chão.
+    # Então não mexa se não saber o que ta fazendo.
+    player_size = 37  
+    start_x = config.SCREEN_WIDTH // 2 - config.SCREEN_HEIGHT // 2
+    player = Player(start_x, 0, player_size, config.SCREEN_WIDTH)
+
     passou = False
 
-    def reiniciar_jogo():
-        global passou
-        player.reset()
+    # ----- FUNÇÃO PARA REINICIAR -----
+    def reiniciar():
+        nonlocal passou
+        player.reset(start_x, 0)
         passou = False
 
-    # --- Loop Principal ---
     running = True
     while running:
-        # 1. Checagem de Eventos (Inputs únicos)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
 
+            # Controles
             if not passou:
                 if event.type == pygame.KEYDOWN:
-                    if (event.key == K_SPACE or event.key == K_w):
+                    if event.key in (K_SPACE, K_w):
                         player.jump()
+
             else:
                 if event.type == pygame.KEYDOWN and event.key == K_r:
-                    reiniciar_jogo()
+                    reiniciar()
 
-        # 2. Atualização da Lógica (Se o jogo não acabou)
+        # ----- UPDATE -----
         if not passou:
-            player.update(ground)
+            player.update(platforms)
 
-            if player.colliderect(porta_final):
+            # Verificar chegada no objetivo
+            if player.colliderect(goal):
                 passou = True
 
-            # 3. Desenho na Tela
-            screen.fill(config.BLUE)
-            
-            ground.draw(screen)
-            porta_final.draw(screen)
+            # ----- DESENHAR -----
+            screen.blit(background, (0, 0))
+
+            for plat in platforms:
+                plat.draw(screen)
+
+            goal.draw(screen)
             player.draw(screen)
 
-        # Tela de Vitória
-        elif passou:
-            font = pygame.font.SysFont('arial', 20, True, False)
-            text = font.render('Parabéns, passou de fase!! Pressione R para Repetir.', True, WHITE)
+        # ----- TELA DE VITÓRIA -----
+        else:
             screen.fill(config.BLACK)
-            screen.blit(text, (SCREEN_WIDTH//2 - text.get_width()//2, SCREEN_HEIGHT // 2))
+            font = pygame.font.SysFont("arial", 26, True)
+
+            msg = "Parabéns! Aperte R para reiniciar."
+            text = font.render(msg, True, config.WHITE)
+
+            screen.blit(
+                text,
+                (config.SCREEN_WIDTH // 2 - text.get_width() // 2,
+                 config.SCREEN_HEIGHT // 2)
+            )
 
         pygame.display.flip()
         clock.tick(60)
 
-    pygame.quit()       
+    pygame.quit()

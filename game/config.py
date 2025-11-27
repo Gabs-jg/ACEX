@@ -17,4 +17,4 @@ JUMP_FORCE = -10
 
 # Criação da tela
 def create_screen():
-    return pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT)) 
+    return pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
