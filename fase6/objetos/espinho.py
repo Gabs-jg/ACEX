@@ -2,10 +2,24 @@ import pygame
 
 class Espinho(pygame.Rect):
     def __init__(self, x, y, width):
-        # Espinhos são baixinhos (height=10) e ficam no chão
-        super().__init__(x, y, width, 10)
-        self.color = (255, 50, 50) # Vermelho Perigo
+        # Altura 16px para caber o sprite
+        super().__init__(x, y, width, 16)
+        
+        self.image = pygame.Surface((width, 16), pygame.SRCALPHA)
+        
+        try:
+            tileset = pygame.image.load("assets/tileset.png").convert_alpha()
+            # Recorta os espinhos do tileset
+            # Estimativa visual: x=16, y=48, w=16, h=16
+            tile_espinho = tileset.subsurface((16, 48, 16, 16))
+            
+            # Repete o espinho lado a lado
+            quantidade = (width // 16) + 1
+            for i in range(quantidade):
+                self.image.blit(tile_espinho, (i * 16, 0))
+        except:
+            self.image.fill((255, 0, 0)) # Se der erro, fica vermelho
 
     def draw(self, screen, camera):
         rect_visivel = camera.apply(self)
-        pygame.draw.rect(screen, self.color, rect_visivel)
+        screen.blit(self.image, rect_visivel)

@@ -9,11 +9,11 @@ class Player(pygame.Rect):
 
         # ===== SPRITES =====
         # Idle (parado)
-        self.sprite_idle = pygame.image.load("fase6/assets/player_idle.png").convert_alpha()
+        self.sprite_idle = pygame.image.load("assets/player_idle.png").convert_alpha()
         self.sprite_idle = pygame.transform.scale(self.sprite_idle, (size, size))
 
         # Run (7 frames)
-        run_sheet = pygame.image.load("fase6/assets/player_run.png").convert_alpha()
+        run_sheet = pygame.image.load("assets/player_run.png").convert_alpha()
         frame_width = run_sheet.get_width() // 7
         frame_height = run_sheet.get_height()
 
