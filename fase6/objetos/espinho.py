@@ -8,7 +8,7 @@ class Espinho(pygame.Rect):
         self.image = pygame.Surface((width, 26), pygame.SRCALPHA)
         
         try:
-            tileset = pygame.image.load("assets/tileset.png").convert_alpha()
+            tileset = pygame.image.load("fase6/assets/tileset.png").convert_alpha()
             # Recorta os espinhos do tileset
             # Estimativa visual: x=16, y=48, w=16, h=16
             tile_espinho = tileset.subsurface((64, 105, 23, 12))

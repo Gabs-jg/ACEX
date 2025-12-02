@@ -20,7 +20,7 @@ clock = pygame.time.Clock()
 
 # --- Assets ---
 try:
-    bg_original = pygame.image.load('assets/background.jpg').convert()
+    bg_original = pygame.image.load('fase6/assets/background.jpg').convert()
     # 1. Redimensiona a imagem para o tamanho exato da TELA (fica com a proporção bonita)
     bg_screen_sized = pygame.transform.scale(bg_original, (SCREEN_WIDTH, SCREEN_HEIGHT))
 except:

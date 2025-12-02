@@ -16,7 +16,7 @@ class Inimigo(pygame.Rect):
         self.sprite_original.fill((255, 0, 255)) # Cor de erro (Magenta)
         
         try:
-            img = pygame.image.load("assets/capivara-corrompida.png").convert_alpha()
+            img = pygame.image.load("fase6/assets/capivara-corrompida.png").convert_alpha()
             self.sprite_original = pygame.transform.scale(img, (size, size))
         except:
             pass # Mantém o quadrado magenta se falhar
