@@ -65,7 +65,7 @@ objs_colisao.append(Plataforma(300, 250, 100, 15, YELLOW))
 objs_colisao.append(Plataforma(500, 200, 100, 15, YELLOW))
 
 # Primeiro Inimigo (Tutorial de combate)
-inimigos.append(Inimigo(600, SCREEN_HEIGHT - ground_h - 25, 25, 500, 750, speed=2))
+inimigos.append(Inimigo(600, SCREEN_HEIGHT - ground_h - 35, 35, 500, 750, speed=2))
 
 # ==========================================
 # SETOR 2: O LAGO DE ESPINHOS (1000px a 2000px)
@@ -115,7 +115,7 @@ objs_colisao.append(Plataforma(4100, 250, 80, 15, YELLOW))
 objs_colisao.append(Plataforma(4300, SCREEN_HEIGHT - ground_h, 700, ground_h, GREEN))
 
 # O Guardião Final (Inimigo muito rápido na porta)
-inimigos.append(Inimigo(4500, SCREEN_HEIGHT - ground_h - 25, 25, 4300, 4800, speed=9))
+inimigos.append(Inimigo(4500, SCREEN_HEIGHT - ground_h - 50, 50, 4300, 4800, speed=9))
 
 # A Porta
 porta_final = Porta(4900, SCREEN_HEIGHT - ground_h - 40, 40)

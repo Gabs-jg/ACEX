@@ -13,7 +13,7 @@ class Plataforma(pygame.Rect):
             try:
                 tileset = pygame.image.load("assets/tileset.png").convert_alpha()
                 # Recorta um quadrado de grama do tileset
-                tile_grama = tileset.subsurface((16, 16, 16, 16)) 
+                tile_grama = tileset.subsurface((68, 184, 27, 7)) 
                 tile_grama = pygame.transform.scale(tile_grama, (height, height)) # Escala para altura do chão
                 
                 # Repete a grama lado a lado até preencher a largura
@@ -28,7 +28,7 @@ class Plataforma(pygame.Rect):
             try:
                 sprites_amb = pygame.image.load("assets/sprites-ambiente.png").convert_alpha()
                 # Recorta o galho da árvore (lado direito da imagem)
-                galho = sprites_amb.subsurface((55, 20, 40, 10))
+                galho = sprites_amb.subsurface((155, 28, 21, 7))
                 # Estica o galho para ficar do tamanho da plataforma
                 self.image = pygame.transform.scale(galho, (width, height))
             except:
